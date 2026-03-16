@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Student Portal — SecureExam</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+/* KEY FIX: NO height:100% — body scrolls naturally */
+:root{
+  --bg:#0a0d14;--sur:#111520;--sur2:#171d2e;--bdr:rgba(99,120,255,.15);
+  --acc:#6378ff;--acc2:#a78bfa;--grn:#34d399;--red:#f87171;--ylw:#fbbf24;
+  --txt:#e8ecf8;--mut:#7b87b0;--dim:#4a5580
+}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--txt);overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;
+  background:radial-gradient(ellipse 80% 60% at 10% 20%,rgba(99,120,255,.07) 0%,transparent 60%),
+             radial-gradient(ellipse 60% 50% at 90% 80%,rgba(167,139,250,.06) 0%,transparent 60%);
+  pointer-events:none;z-index:0}
+
+/* NAV */
+.nav{position:sticky;top:0;z-index:200;display:flex;align-items:center;justify-content:space-between;
+  padding:.85rem 2rem;background:rgba(10,13,20,.94);backdrop-filter:blur(16px);border-bottom:1px solid var(--bdr)}
+.nbrand{display:flex;align-items:center;gap:.7rem;text-decoration:none}
+.nicon{width:34px;height:34px;background:linear-gradient(135deg,var(--acc),var(--acc2));border-radius:9px;
+  display:flex;align-items:center;justify-content:center;font-size:1rem;box-shadow:0 0 16px rgba(99,120,255,.4)}
+.nbrand h1{font-size:1.05rem;font-weight:800;color:var(--txt);letter-spacing:-.02em}
+.nbrand h1 span{color:var(--acc)}
+.nav-r{display:flex;align-items:center;gap:.65rem}
+.nav-badge{padding:.3rem .75rem;border:1px solid var(--grn);color:var(--grn);background:rgba(52,211,153,.1);border-radius:7px;font-size:.74rem;font-weight:700}
+.nav-user{font-size:.82rem;color:var(--mut)}
+.btn-nav{padding:.36rem .85rem;border:1px solid var(--bdr);border-radius:7px;background:transparent;color:var(--mut);font-size:.8rem;cursor:pointer;transition:all .15s;font-family:inherit}
+.btn-nav:hover{border-color:var(--acc);color:var(--acc)}
+
+/* LAYOUT — KEY FIX */
+.layout{display:flex;position:relative;z-index:1;min-height:calc(100vh - 57px)}
+.sb{width:215px;flex-shrink:0;padding:1.25rem .65rem;border-right:1px solid var(--bdr);
+  position:sticky;top:57px;height:calc(100vh - 57px);overflow-y:auto;align-self:flex-start}
+.sblbl{font-size:.63rem;text-transform:uppercase;letter-spacing:.1em;color:var(--dim);padding:.45rem .7rem;margin-top:.5rem;display:block}
+.sblink{display:flex;align-items:center;gap:.55rem;padding:.57rem .7rem;border-radius:8px;
+  color:var(--mut);font-size:.84rem;font-weight:500;transition:all .15s;cursor:pointer;
+  border:none;background:transparent;width:100%;text-align:left;font-family:inherit}
+.sblink:hover{background:var(--sur2);color:var(--txt)}
+.sblink.on{background:rgba(99,120,255,.12);color:var(--acc)}
+.si{font-size:.9rem;width:16px;text-align:center;flex-shrink:0}
+
+/* MAIN — KEY FIX: no overflow-y, no fixed height */
+.main{flex:1;padding:1.75rem 2rem;min-width:0}
+
+.ph{padding-bottom:1.2rem;border-bottom:1px solid var(--bdr);margin-bottom:1.5rem}
+.ey{font-size:.67rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--grn);margin-bottom:.55rem;display:flex;align-items:center;gap:.5rem}
+.ey::before{content:'';width:16px;height:2px;background:var(--grn)}
+.ph h2{font-size:1.75rem;font-weight:800;color:var(--txt);letter-spacing:-.03em}
+.ph p{color:var(--mut);margin-top:.35rem;font-size:.875rem}
+
+/* CARDS */
+.card{background:var(--sur);border:1px solid var(--bdr);border-radius:14px;padding:1.5rem;position:relative;transition:border-color .2s}
+.card::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;border-radius:14px 14px 0 0;background:linear-gradient(90deg,transparent,rgba(99,120,255,.4),transparent)}
+.ctitle{font-size:.9rem;font-weight:700;color:var(--txt);margin-bottom:1.1rem;display:flex;align-items:center;gap:.5rem}
+.cico{width:26px;height:26px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:.8rem}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:1.1rem}
+.gg{gap:1.6rem}
+.mb{margin-bottom:1.1rem}.mbl{margin-bottom:1.5rem}.mt{margin-top:1rem}.mtl{margin-top:1.5rem}
+
+/* STAT */
+.stat{background:var(--sur);border:1px solid var(--bdr);border-radius:13px;padding:1.35rem}
+.stat .ico{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1rem;margin-bottom:.85rem}
+.stat .val{font-size:1.9rem;font-weight:800;color:var(--txt);letter-spacing:-.03em;line-height:1}
+.stat .lbl{font-size:.72rem;color:var(--mut);margin-top:.28rem;text-transform:uppercase;letter-spacing:.06em}
+@keyframes glow{0%,100%{box-shadow:0 0 12px rgba(99,120,255,.2)}50%{box-shadow:0 0 28px rgba(99,120,255,.42)}}
+.pulse{animation:glow 2.5s ease-in-out infinite}
+
+/* EXAM CARDS */
+.ecard{background:var(--sur);border:1px solid var(--bdr);border-radius:15px;padding:1.4rem;
+  position:relative;transition:all .25s}
+.ecard:hover{border-color:rgba(99,120,255,.3);transform:translateY(-2px);box-shadow:0 8px 28px rgba(99,120,255,.1)}
+.ecard::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:15px 15px 0 0}
+.ecard.p-active::before{background:linear-gradient(90deg,var(--grn),var(--acc))}
+.ecard.p-upcoming::before{background:linear-gradient(90deg,var(--ylw),var(--acc2))}
+.ecard.p-ended::before{background:linear-gradient(90deg,var(--red),transparent)}
+.ecard.p-unlocking_soon::before{background:linear-gradient(90deg,var(--acc),var(--grn));animation:glow 1s ease infinite}
+.emeta{display:grid;grid-template-columns:1fr 1fr;gap:.42rem 1rem;margin:.8rem 0 1.05rem}
+.mk{font-size:.72rem;color:var(--dim);margin-bottom:.08rem}
+.mv{font-size:.82rem;color:var(--mut);font-weight:500}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:.45rem;padding:.65rem 1.3rem;border-radius:9px;
+  border:none;font-family:inherit;font-size:.875rem;font-weight:600;cursor:pointer;transition:all .2s;
+  text-decoration:none;white-space:nowrap;justify-content:center}
+.btn:disabled{opacity:.55;cursor:not-allowed;transform:none!important}
+.btnp{background:var(--acc);color:#fff;box-shadow:0 0 16px rgba(99,120,255,.28)}
+.btnp:hover:not(:disabled){background:#7589ff;transform:translateY(-1px)}
+.btno{background:transparent;border:1px solid var(--bdr);color:var(--mut)}
+.btno:hover:not(:disabled){border-color:var(--acc);color:var(--acc)}
+.btng{background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.3);color:var(--grn)}
+.btng:hover:not(:disabled){background:rgba(52,211,153,.18)}
+.btn-sm{padding:.38rem .8rem;font-size:.78rem}
+.btn-full{width:100%}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* BADGES */
+.badge{display:inline-flex;align-items:center;gap:.28rem;padding:.22rem .6rem;border-radius:5px;font-size:.7rem;font-weight:700;letter-spacing:.03em}
+.b-acc{background:rgba(99,120,255,.14);color:var(--acc);border:1px solid rgba(99,120,255,.22)}
+.b-grn{background:rgba(52,211,153,.11);color:var(--grn);border:1px solid rgba(52,211,153,.22)}
+.b-ylw{background:rgba(251,191,36,.11);color:var(--ylw);border:1px solid rgba(251,191,36,.22)}
+.b-red{background:rgba(248,113,113,.11);color:var(--red);border:1px solid rgba(248,113,113,.22)}
+.b-pur{background:rgba(167,139,250,.11);color:var(--acc2);border:1px solid rgba(167,139,250,.22)}
+
+/* ALERTS */
+.alert{padding:.75rem 1rem;border-radius:9px;font-size:.84rem;display:flex;align-items:flex-start;gap:.6rem;margin-bottom:.9rem}
+.a-grn{background:rgba(52,211,153,.08);border:1px solid rgba(52,211,153,.2);color:var(--grn)}
+.a-red{background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.2);color:var(--red)}
+.a-acc{background:rgba(99,120,255,.08);border:1px solid rgba(99,120,255,.2);color:var(--acc)}
+.a-ylw{background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.2);color:var(--ylw)}
+
+/* TABLE */
+.twrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.84rem}
+thead th{padding:.65rem .9rem;text-align:left;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--dim);border-bottom:1px solid var(--bdr);background:rgba(255,255,255,.015)}
+tbody tr{border-bottom:1px solid rgba(99,120,255,.05);transition:background .15s}
+tbody tr:hover{background:rgba(99,120,255,.04)}
+tbody td{padding:.75rem .9rem;color:var(--mut);vertical-align:middle}
+tbody td:first-child{color:var(--txt)}
+
+/* FORM */
+.fg{margin-bottom:1rem}
+.fg label{display:block;font-size:.71rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--mut);margin-bottom:.38rem}
+.fg input,.fg select,.fg textarea{width:100%;padding:.7rem .9rem;background:var(--sur2);border:1.5px solid var(--bdr);border-radius:9px;color:var(--txt);font-family:inherit;font-size:.875rem;outline:none;transition:all .2s}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--acc);box-shadow:0 0 0 3px rgba(99,120,255,.15)}
+.fg textarea{resize:vertical;min-height:80px}
+.fg select option{background:var(--sur2)}
+.fg input::placeholder,.fg textarea::placeholder{color:var(--dim)}
+
+/* HASH BOX */
+.hashbox{background:var(--bg);border:1px solid var(--bdr);border-radius:7px;padding:.55rem .85rem;font-family:'Courier New',monospace;font-size:.7rem;color:var(--grn);word-break:break-all}
+.hashbox.fail{color:var(--red)}
+
+/* EXAM VIEWER — fixed fullscreen overlay, independent scroll */
+.viewer{
+  position:fixed;inset:0;background:var(--bg);z-index:800;
+  display:flex;flex-direction:column;
+  transform:translateY(100%);transition:transform .35s cubic-bezier(.4,0,.2,1);
+}
+.viewer.open{transform:translateY(0)}
+.vhead{flex-shrink:0;padding:.85rem 1.75rem;background:var(--sur);border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+.vtitle{font-size:1.05rem;font-weight:800;color:var(--txt)}
+.vtimer{font-family:'Courier New',monospace;font-size:1.4rem;font-weight:800;color:var(--grn);background:rgba(52,211,153,.1);padding:.38rem .9rem;border-radius:8px;border:1px solid rgba(52,211,153,.25);min-width:105px;text-align:center}
+.vtimer.warn{color:var(--ylw);background:rgba(251,191,36,.1);border-color:rgba(251,191,36,.25)}
+.vtimer.danger{color:var(--red);background:rgba(248,113,113,.1);border-color:rgba(248,113,113,.25);animation:glow .8s ease infinite}
+/* Viewer body: fixed height remainder, each panel scrolls independently */
+.vbody{flex:1;min-height:0;display:grid;grid-template-columns:1fr 320px;overflow:hidden}
+.vcontent{padding:1.75rem;border-right:1px solid var(--bdr);overflow-y:auto}
+.vcontent pre{font-family:inherit;white-space:pre-wrap;line-height:1.85;color:var(--txt);font-size:.9rem}
+.vanswer{padding:1.4rem;display:flex;flex-direction:column;gap:.85rem;overflow-y:auto}
+.vanswer h4{font-size:.9rem;font-weight:700;color:var(--txt);flex-shrink:0}
+.vanswer textarea{flex:1;min-height:0;padding:.75rem;background:var(--sur2);border:1.5px solid var(--bdr);border-radius:9px;color:var(--txt);font-family:inherit;font-size:.875rem;outline:none;resize:none}
+.vanswer textarea:focus{border-color:var(--acc);box-shadow:0 0 0 3px rgba(99,120,255,.15)}
+.ibadge{display:inline-flex;align-items:center;gap:.35rem;padding:.32rem .72rem;border-radius:7px;font-size:.78rem;font-weight:600}
+.i-ok{background:rgba(52,211,153,.1);color:var(--grn);border:1px solid rgba(52,211,153,.3)}
+.i-fail{background:rgba(248,113,113,.1);color:var(--red);border:1px solid rgba(248,113,113,.3)}
+
+/* MODAL */
+.mover{position:fixed;inset:0;background:rgba(0,0,0,.72);backdrop-filter:blur(6px);z-index:999;display:flex;align-items:center;justify-content:center;padding:1.5rem;opacity:0;pointer-events:none;transition:opacity .2s}
+.mover.show{opacity:1;pointer-events:all}
+.modal{background:var(--sur);border:1px solid var(--bdr);border-radius:16px;padding:1.75rem;width:100%;max-width:480px;transform:translateY(20px);transition:transform .25s;max-height:90vh;overflow-y:auto;position:relative}
+.mover.show .modal{transform:translateY(0)}
+.mclose{position:absolute;top:.9rem;right:.9rem;background:transparent;border:none;color:var(--mut);cursor:pointer;font-size:1.1rem;padding:.3rem .5rem;border-radius:6px}
+
+/* TOAST */
+#tc{position:fixed;bottom:1.5rem;right:1.5rem;z-index:9999;display:flex;flex-direction:column;gap:.5rem;pointer-events:none}
+.toast{background:var(--sur);border:1px solid var(--bdr);border-radius:10px;padding:.8rem 1.1rem;font-size:.84rem;display:flex;align-items:center;gap:.55rem;min-width:240px;animation:fin .3s ease;box-shadow:0 8px 28px rgba(0,0,0,.45)}
+@keyframes fin{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+/* UTIL */
+.flex{display:flex}.aic{align-items:center}.jsb{justify-content:space-between}
+.ts{font-size:.82rem}.tm{color:var(--mut)}.td{color:var(--dim)}.tg{color:var(--grn)}.tr{color:var(--red)}
+.fw{font-weight:600}.mono{font-family:'Courier New',monospace;font-size:.78rem}
+.sec{display:none}.sec.act{display:block}
+@media(max-width:768px){.g2,.g3{grid-template-columns:1fr}.sb{display:none}.main{padding:1.25rem}.vbody{grid-template-columns:1fr}.vanswer{border-top:1px solid var(--bdr)}}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a href="../index.html" class="nbrand">
+    <div class="nicon">🛡️</div><h1>Secure<span>Exam</span></h1>
+  </a>
+  <div class="nav-r">
+    <span class="nav-user" id="nu"></span>
+    <span class="nav-badge">👨‍🎓 STUDENT</span>
+    <button class="btn-nav" onclick="doLogout()">Sign Out</button>
+  </div>
+</nav>
+
+<div class="layout">
+  <aside class="sb">
+    <button class="sblink on" id="sl-dash"     onclick="go('dash')">    <span class="si">🏠</span> Dashboard</button>
+    <span class="sblbl">My Exams</span>
+    <button class="sblink" id="sl-active"   onclick="go('active')">  <span class="si">▶</span> Active Now</button>
+    <button class="sblink" id="sl-upcoming" onclick="go('upcoming')"><span class="si">⏳</span> Upcoming</button>
+    <button class="sblink" id="sl-history"  onclick="go('history')"> <span class="si">✓</span> History</button>
+    <span class="sblbl">Security</span>
+    <button class="sblink" id="sl-verify"   onclick="go('verify')">  <span class="si">🔍</span> Verify Integrity</button>
+  </aside>
+
+  <main class="main">
+
+    <!-- ═══ DASHBOARD ═══ -->
+    <div id="s-dash" class="sec act">
+      <div class="ph">
+        <div class="ey">Student Portal</div>
+        <h2>Hello, <span id="wn" style="color:var(--acc)">Student</span> 👋</h2>
+        <p>Your exams are encrypted and sealed until the scheduled time. Click "Open Exam" when ready.</p>
+      </div>
+      <div class="g3 mbl" id="stats-area"></div>
+      <div id="all-grid" class="g2 gg"></div>
+    </div>
+
+    <!-- ═══ ACTIVE ═══ -->
+    <div id="s-active" class="sec">
+      <div class="ph"><div class="ey">Now</div><h2>Active Exams</h2><p>These exams are open now. Click to decrypt and begin.</p></div>
+      <div id="active-grid" class="g2 gg"></div>
+    </div>
+
+    <!-- ═══ UPCOMING ═══ -->
+    <div id="s-upcoming" class="sec">
+      <div class="ph"><div class="ey">Scheduled</div><h2>Upcoming Exams</h2></div>
+      <div id="upcoming-grid" class="g2 gg"></div>
+    </div>
+
+    <!-- ═══ HISTORY ═══ -->
+    <div id="s-history" class="sec">
+      <div class="ph"><div class="ey">History</div><h2>Exam History</h2></div>
+      <div class="card">
+        <div class="twrap">
+          <table>
+            <thead><tr><th>Exam</th><th>Subject</th><th>Date</th><th>Duration</th><th>Status</th><th>Answer Hash</th></tr></thead>
+            <tbody id="hist-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ VERIFY ═══ -->
+    <div id="s-verify" class="sec">
+      <div class="ph"><div class="ey">SHA-256</div><h2>Verify Exam Integrity</h2><p>Independently confirm no tampering has occurred.</p></div>
+      <div class="g2 gg">
+        <div class="card">
+          <div class="ctitle"><div class="cico" style="background:rgba(99,120,255,.15)">🔍</div>Verify by Exam</div>
+          <div class="fg">
+            <label>Select Exam</label>
+            <select id="v-sel"><option value="">— Choose an encrypted exam —</option></select>
+          </div>
+          <button class="btn btnp btn-full mt" onclick="runVerify()">Run Integrity Check →</button>
+          <div id="v-res" style="margin-top:1rem"></div>
+          <hr style="border:none;border-top:1px solid var(--bdr);margin:1.5rem 0"/>
+          <div class="ctitle"><div class="cico" style="background:rgba(52,211,153,.12)">🧮</div>Manual Hash Tool</div>
+          <div class="fg">
+            <label>Paste any text</label>
+            <textarea id="v-manual" placeholder="Paste content to compute SHA-256..."></textarea>
+          </div>
+          <button class="btn btno btn-full" onclick="manualHash()">Compute SHA-256 →</button>
+          <div id="v-man-res" style="margin-top:.85rem"></div>
+        </div>
+        <div class="card">
+          <div class="ctitle"><div class="cico" style="background:rgba(251,191,36,.12)">ℹ</div>How Integrity Works</div>
+          <p class="ts tm" style="line-height:1.75;margin-bottom:1rem">SHA-256 produces a unique 256-bit fingerprint of the exam content. Even a single character change produces a completely different hash — making tampering immediately detectable.</p>
+          <div class="mb"><div class="ts td mb" style="margin-bottom:.4rem">Stored Hash (sealed at creation)</div><div class="hashbox">e3b0c44298fc1c149afb…855</div></div>
+          <div><div class="ts td mb" style="margin-bottom:.4rem">Computed Hash on open (must match)</div><div class="hashbox">e3b0c44298fc1c149afb…855</div></div>
+          <div class="alert a-acc mt" style="margin-top:1rem">ℹ Any modification — even a single space — is instantly detectable.</div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- Exam Viewer — fixed overlay, completely independent of page scroll -->
+<div class="viewer" id="viewer">
+  <div class="vhead">
+    <div>
+      <div class="vtitle" id="v-title">Exam Title</div>
+      <div style="display:flex;align-items:center;gap:.7rem;margin-top:.4rem;flex-wrap:wrap">
+        <span class="badge b-pur" id="v-subj"></span>
+        <span class="ibadge" id="v-integrity"></span>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:.85rem;flex-wrap:wrap">
+      <div>
+        <div style="font-size:.63rem;color:var(--dim);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.2rem;text-align:center">Time Remaining</div>
+        <div class="vtimer" id="v-timer">--:--:--</div>
+      </div>
+      <button class="btn btng" id="v-submit" onclick="submitExam()">Submit Exam</button>
+      <button class="btn btno btn-sm" onclick="closeViewer()">✕ Close</button>
+    </div>
+  </div>
+  <div class="vbody">
+    <div class="vcontent">
+      <div style="margin-bottom:1.2rem;padding-bottom:.85rem;border-bottom:1px solid var(--bdr)">
+        <div style="font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;color:var(--dim);margin-bottom:.2rem">Decrypted Exam Paper</div>
+        <div style="font-size:.78rem;color:var(--grn)">✓ AES-256-GCM decryption successful · SHA-256 integrity verified</div>
+      </div>
+      <pre id="v-content"></pre>
+    </div>
+    <div class="vanswer">
+      <h4>📝 Your Answers</h4>
+      <div class="alert a-acc" style="margin-bottom:0;font-size:.78rem;flex-shrink:0">Write your answers below. Auto-saved every 30 seconds.</div>
+      <textarea id="ans-area" placeholder="Q1: ...&#10;&#10;Q2: ...&#10;&#10;Q3: ..."></textarea>
+      <div style="font-size:.7rem;color:var(--dim);flex-shrink:0" id="save-lbl">Auto-save ready.</div>
+    </div>
+  </div>
+</div>
+
+<div id="tc"></div>
+
+<script>
+/* ── STORE ── */
+const Store = (() => {
+  const K={EXAMS:'se_exams',USERS:'se_users',AUDIT:'se_audit',CU:'se_cu'};
+  function _g(k){try{return JSON.parse(sessionStorage.getItem(k))||null;}catch{return null;}}
+  function _s(k,v){sessionStorage.setItem(k,JSON.stringify(v));}
+  function _seed(){const u=[{id:'u1',name:'Dr. Sharma',email:'teacher@exam.edu',password:'teacher123',role:'teacher',createdAt:new Date().toISOString()},{id:'u2',name:'Arjun Mehta',email:'student1@exam.edu',password:'student123',role:'student',studentId:'CS2021001',createdAt:new Date().toISOString()},{id:'u3',name:'Priya Patel',email:'student2@exam.edu',password:'student456',role:'student',studentId:'CS2021002',createdAt:new Date().toISOString()},{id:'u4',name:'Rahul Singh',email:'student3@exam.edu',password:'student789',role:'student',studentId:'CS2021003',createdAt:new Date().toISOString()}];_s(K.USERS,u);return u;}
+  function getUsers(){return _g(K.USERS)||_seed();}
+  function getUserByEmail(e){return getUsers().find(u=>u.email.toLowerCase()===e.toLowerCase().trim());}
+  function getUserById(id){return getUsers().find(u=>u.id===id);}
+  function login(email,pass){const u=getUserByEmail(email);if(!u)return{success:false,error:'No account found.'};if(u.password!==pass)return{success:false,error:'Incorrect password.'};_s(K.CU,{...u,session:{loginTime:new Date().toISOString()}});logAudit('LOGIN',u.id,'Logged in: '+u.name);return{success:true,user:u};}
+  function logout(){const u=getCurrentUser();if(u)logAudit('LOGOUT',u.id,'Logged out: '+u.name);sessionStorage.removeItem(K.CU);}
+  function getCurrentUser(){return _g(K.CU);}
+  function getExams(){return _g(K.EXAMS)||[];}
+  function getExamById(id){return getExams().find(e=>e.id===id);}
+  function getExamsForStudent(sid){return getExams().filter(e=>(e.enrolledStudents||[]).includes(sid));}
+  function saveExam(e){const ex=getExams(),i=ex.findIndex(x=>x.id===e.id);if(i>=0)ex[i]=e;else ex.push(e);_s(K.EXAMS,ex);return e;}
+  function addSubmission(examId,sub){const e=getExamById(examId);if(!e)return null;e.submissions=e.submissions||[];const i=e.submissions.findIndex(s=>s.studentId===sub.studentId);if(i>=0)e.submissions[i]=sub;else e.submissions.push(sub);logAudit('SUBMISSION',sub.studentId,'Submitted: '+e.title,{answerHash:sub.answerHash});return saveExam(e);}
+  function getSubmission(examId,sid){const e=getExamById(examId);return e?(e.submissions||[]).find(s=>s.studentId===sid):null;}
+  function isExamUnlocked(e){if(!e.scheduledTime||!e.encryptedPackage)return false;return Date.now()>=new Date(e.scheduledTime).getTime()-(e.decryptWindow||10)*60000;}
+  function getExamPhase(e){if(!e.scheduledTime)return 'unscheduled';const now=Date.now(),s=new Date(e.scheduledTime).getTime(),end=s+(e.duration||60)*60000,w=(e.decryptWindow||10)*60000;if(now<s-w)return 'upcoming';if(now<s)return 'unlocking_soon';if(now<end)return 'active';return 'ended';}
+  function logAudit(action,userId,msg,meta={}){const logs=_g(K.AUDIT)||[];logs.unshift({id:'lg_'+Date.now(),action,userId,message:msg,meta,timestamp:new Date().toISOString()});_s(K.AUDIT,logs.slice(0,500));}
+  function getAuditLog(n=100){return(_g(K.AUDIT)||[]).slice(0,n);}
+  function seedDemoExams(){if(getExams().length>0)return;const t=getUserByEmail('teacher@exam.edu'),s1=getUserByEmail('student1@exam.edu'),s2=getUserByEmail('student2@exam.edu'),s3=getUserByEmail('student3@exam.edu');const now=new Date();function ce(d){const e={id:'ex_'+Date.now()+'_'+Math.floor(Math.random()*9999),title:d.title,subject:d.subject,duration:d.duration,scheduledTime:d.scheduledTime,decryptWindow:d.decryptWindow||10,createdBy:d.createdBy,createdAt:new Date().toISOString(),status:'draft',enrolledStudents:d.enrolledStudents||[],encryptedPackage:null,submissions:[]};const ex=getExams();ex.push(e);_s(K.EXAMS,ex);logAudit('EXAM_CREATED',d.createdBy,'Exam created: '+d.title);return e;}ce({title:'Data Structures & Algorithms — Mid Sem',subject:'CS301',duration:120,scheduledTime:new Date(now.getTime()+3600000).toISOString(),decryptWindow:10,createdBy:t.id,enrolledStudents:[s1.id,s2.id,s3.id]});ce({title:'Computer Networks — Unit Test 1',subject:'CS302',duration:60,scheduledTime:new Date(now.getTime()+10800000).toISOString(),decryptWindow:5,createdBy:t.id,enrolledStudents:[s1.id,s2.id]});ce({title:'Operating Systems — Final Exam',subject:'CS303',duration:180,scheduledTime:new Date(now.getTime()-86400000).toISOString(),decryptWindow:5,createdBy:t.id,enrolledStudents:[s1.id,s2.id,s3.id]});}
+  return{getUsers,getUserByEmail,getUserById,login,logout,getCurrentUser,getExams,getExamById,getExamsForStudent,saveExam,addSubmission,getSubmission,isExamUnlocked,getExamPhase,logAudit,getAuditLog,seedDemoExams};
+})();
+
+/* ── CRYPTO ── */
+const SC = (() => {
+  const ub64=s=>{const b=atob(s),r=new Uint8Array(b.length);for(let i=0;i<b.length;i++)r[i]=b.charCodeAt(i);return r;};
+  const hex=b=>Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,'0')).join('');
+  async function decryptExamPaper(pkg){
+    const priv=await crypto.subtle.importKey('pkcs8',ub64(pkg.privateKey),{name:'RSA-OAEP',hash:'SHA-256'},false,['decrypt']);
+    const rawKey=await crypto.subtle.decrypt({name:'RSA-OAEP'},priv,ub64(pkg.wrappedAESKey));
+    const aesKey=await crypto.subtle.importKey('raw',rawKey,{name:'AES-GCM',length:256},false,['decrypt']);
+    const combined=ub64(pkg.encryptedContent);
+    const dec=await crypto.subtle.decrypt({name:'AES-GCM',iv:combined.slice(0,12)},aesKey,combined.slice(12));
+    const content=new TextDecoder().decode(dec);
+    const hb=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(content));
+    const computedHash=hex(hb);
+    return{content,integrityValid:computedHash===pkg.hash,computedHash,storedHash:pkg.hash};
+  }
+  async function hashData(data){const e=typeof data==='string'?new TextEncoder().encode(data):data;return hex(await crypto.subtle.digest('SHA-256',e));}
+  return{decryptExamPaper,hashData};
+})();
+
+/* ── AUTH GUARD ── */
+Store.seedDemoExams();
+const CU = Store.getCurrentUser();
+if(!CU || CU.role !== 'student') { location.href = '../index.html'; throw new Error('Not authenticated'); }
+document.getElementById('nu').textContent = CU.name;
+document.getElementById('wn').textContent = CU.name.split(' ')[0];
+function doLogout(){Store.logout();location.href='../index.html';}
+
+/* ── STATE ── */
+let timerIv=null, autoSaveIv=null, activeExamId=null;
+
+/* ── HELPERS ── */
+const $ = id => document.getElementById(id);
+function fmtD(iso){if(!iso)return '—';return new Date(iso).toLocaleString('en-IN',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',hour12:true});}
+function fmtDur(m){if(!m)return '—';const h=Math.floor(m/60),mn=m%60;return h?`${h}h${mn?` ${mn}m`:''}`:mn+'min';}
+function tH(h,n=20){if(!h)return '—';return h.slice(0,n)+'…'+h.slice(-4);}
+function pb(p){const m={upcoming:'<span class="badge b-ylw">⏳ Upcoming</span>',unlocking_soon:'<span class="badge b-acc">🔓 Unlocking Soon</span>',active:'<span class="badge b-grn">▶ Active</span>',ended:'<span class="badge b-red">⏹ Ended</span>',unscheduled:'<span class="badge b-ylw">◉ Draft</span>'};return m[p]||`<span class="badge b-ylw">${p}</span>`;}
+function toast(m,t='info'){const c=$('tc'),el=document.createElement('div');el.className='toast';const col={success:'var(--grn)',error:'var(--red)',info:'var(--acc)'}[t]||'var(--acc)';const ic={success:'✓',error:'✕',info:'ℹ'}[t]||'ℹ';el.innerHTML=`<span style="color:${col};font-weight:800">${ic}</span> ${m}`;c.appendChild(el);setTimeout(()=>{el.style.transition='opacity .3s';el.style.opacity='0';setTimeout(()=>el.remove(),300);},3500);}
+function myExams(){return Store.getExamsForStudent(CU.id);}
+
+/* ── SECTIONS ── */
+const SECS=['dash','active','upcoming','history','verify'];
+function go(name){
+  SECS.forEach(s=>{
+    $('s-'+s).classList.toggle('act',s===name);
+    const sl=$('sl-'+s);if(sl)sl.classList.toggle('on',s===name);
+  });
+  if(name==='dash')     renderDash();
+  if(name==='active')   renderGrid('active-grid',['active','unlocking_soon']);
+  if(name==='upcoming') renderGrid('upcoming-grid',['upcoming']);
+  if(name==='history')  renderHistory();
+  if(name==='verify')   buildVSel();
+}
+
+/* ── DASHBOARD ── */
+function renderDash(){
+  const ex=myExams(), phases=ex.map(e=>Store.getExamPhase(e));
+  const active=phases.filter(p=>p==='active').length;
+  const upcoming=phases.filter(p=>['upcoming','unlocking_soon'].includes(p)).length;
+  const ended=phases.filter(p=>p==='ended').length;
+  $('stats-area').innerHTML=`
+    <div class="stat"><div class="ico" style="background:rgba(99,120,255,.15)">📚</div><div class="val">${ex.length}</div><div class="lbl">Enrolled</div></div>
+    <div class="stat ${active?'pulse':''}"><div class="ico" style="background:rgba(52,211,153,.12)">▶</div><div class="val">${active}</div><div class="lbl">Active Now</div></div>
+    <div class="stat"><div class="ico" style="background:rgba(251,191,36,.12)">⏳</div><div class="val">${upcoming}</div><div class="lbl">Upcoming</div></div>`;
+  renderGrid('all-grid',['active','unlocking_soon','upcoming','ended']);
+}
+
+/* ── EXAM CARDS ── */
+function renderGrid(cid, phases){
+  const ex=myExams().filter(e=>phases.includes(Store.getExamPhase(e)));
+  const el=$(cid);
+  if(!el) return;
+  if(!ex.length){el.innerHTML=`<div class="card" style="grid-column:1/-1;text-align:center;color:var(--dim);padding:3rem">No exams in this category.</div>`;return;}
+  el.innerHTML=ex.map(e=>buildCard(e)).join('');
+  // Start countdowns for upcoming cards
+  ex.filter(e=>Store.getExamPhase(e)==='upcoming').forEach(startCdFor);
+}
+
+function buildCard(exam){
+  const phase=Store.getExamPhase(exam), sub=Store.getSubmission(exam.id,CU.id), hasPkg=!!exam.encryptedPackage;
+  let action='';
+  if(phase==='active'&&hasPkg&&!sub)
+    action=`<button class="btn btnp btn-full" onclick="openExam('${exam.id}',this)">🔓 Open & Decrypt Exam</button>`;
+  else if(phase==='active'&&!hasPkg)
+    action=`<button class="btn btno btn-full" disabled>⚠ Paper not uploaded yet</button>`;
+  else if((phase==='active'||phase==='ended')&&sub)
+    action=`<button class="btn btng btn-full" disabled>✓ Submitted</button>`;
+  else if(phase==='unlocking_soon')
+    action=`<div class="alert a-acc" style="margin:0;text-align:center;font-size:.8rem">🔓 Unlocking soon — paper will be available shortly</div>`;
+  else if(phase==='ended'&&!sub)
+    action=`<button class="btn btn-full" style="background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.2);color:var(--red)" disabled>✕ Missed</button>`;
+  else
+    action=`<button class="btn btno btn-full" disabled>🔒 Locked until exam time</button>`;
+
+  return `<div class="ecard p-${phase}">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:.8rem">
+      <div><div style="font-size:1rem;font-weight:700;color:var(--txt);margin-bottom:.28rem">${exam.title}</div><span class="badge b-pur">${exam.subject}</span></div>
+      ${pb(phase)}
+    </div>
+    <div class="emeta">
+      <div><div class="mk">Date & Time</div><div class="mv">${fmtD(exam.scheduledTime)}</div></div>
+      <div><div class="mk">Duration</div><div class="mv">${fmtDur(exam.duration)}</div></div>
+      <div><div class="mk">Paper</div><div class="mv">${hasPkg?'<span style="color:var(--grn)">🔒 Encrypted</span>':'<span style="color:var(--ylw)">⚠ Pending</span>'}</div></div>
+      <div><div class="mk">Status</div><div class="mv">${sub?'<span style="color:var(--grn)">Submitted ✓</span>':(phase==='ended'?'<span style="color:var(--red)">Missed</span>':'Pending')}</div></div>
+    </div>
+    ${phase==='upcoming'?`<div style="text-align:center;padding:.65rem;background:rgba(251,191,36,.07);border:1px solid rgba(251,191,36,.15);border-radius:9px;font-size:.82rem;color:var(--ylw)">🔒 Unlocks in <strong id="cd-${exam.id}">calculating...</strong></div>`:action}
+  </div>`;
+}
+
+function startCdFor(exam){
+  function tick(){
+    const el=$('cd-'+exam.id); if(!el) return;
+    const winMs=(exam.decryptWindow||10)*60000;
+    const ms=new Date(exam.scheduledTime).getTime()-winMs-Date.now();
+    if(ms<=0){el.textContent='now';return;}
+    const h=Math.floor(ms/3600000),m=Math.floor((ms%3600000)/60000),s=Math.floor((ms%60000)/1000);
+    el.textContent=h?`${h}h ${m}m ${s}s`:`${m}m ${s}s`;
+  }
+  tick(); setInterval(tick,1000);
+}
+
+/* ── OPEN EXAM ── */
+async function openExam(examId, btn){
+  const exam=Store.getExamById(examId);
+  if(!exam){toast('Exam not found.','error');return;}
+  if(!Store.isExamUnlocked(exam)){toast('Exam is still locked.','error');return;}
+  if(!exam.encryptedPackage){toast('Paper not uploaded by teacher yet.','error');return;}
+  const origTxt=btn.innerHTML;
+  btn.disabled=true; btn.innerHTML='<span style="display:inline-block;animation:spin .8s linear infinite">⟳</span> Decrypting...';
+  try{
+    const res=await SC.decryptExamPaper(exam.encryptedPackage);
+    Store.logAudit('EXAM_ACCESSED',CU.id,'Exam accessed: '+exam.title,{examId,integrityValid:res.integrityValid});
+    activeExamId=examId;
+    $('v-title').textContent=exam.title;
+    $('v-subj').textContent=exam.subject;
+    $('v-content').textContent=res.content;
+    const iEl=$('v-integrity');
+    if(res.integrityValid){iEl.className='ibadge i-ok';iEl.textContent='✓ Integrity Verified';}
+    else{iEl.className='ibadge i-fail';iEl.textContent='✕ INTEGRITY FAILED';toast('⚠ Integrity check FAILED — paper may be tampered!','error',8000);}
+    // Restore draft answer
+    const saved=sessionStorage.getItem('ans_'+examId)||'';
+    $('ans-area').value=saved;
+    startTimer(exam);
+    if(autoSaveIv)clearInterval(autoSaveIv);
+    autoSaveIv=setInterval(()=>{
+      sessionStorage.setItem('ans_'+examId,$('ans-area').value);
+      $('save-lbl').textContent='✓ Auto-saved at '+new Date().toLocaleTimeString();
+    },30000);
+    $('viewer').classList.add('open');
+  }catch(err){toast('Decryption failed: '+err.message,'error'); btn.disabled=false; btn.innerHTML=origTxt;}
+}
+
+function startTimer(exam){
+  if(timerIv)clearInterval(timerIv);
+  const end=new Date(exam.scheduledTime).getTime()+exam.duration*60000;
+  function tick(){
+    const ms=end-Date.now(), el=$('v-timer');
+    if(ms<=0){el.textContent='00:00:00';el.className='vtimer danger';clearInterval(timerIv);toast('⏰ Time is up! Submitting...','error',4000);setTimeout(submitExam,2500);return;}
+    const h=Math.floor(ms/3600000),m=Math.floor((ms%3600000)/60000),s=Math.floor((ms%60000)/1000);
+    el.textContent=`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    el.className='vtimer'+(ms<300000?' danger':ms<900000?' warn':'');
+  }
+  tick(); timerIv=setInterval(tick,1000);
+}
+
+async function submitExam(){
+  if(!activeExamId)return;
+  const answers=$('ans-area').value.trim();
+  if(!answers){toast('Please write your answers before submitting.','error');return;}
+  const ok=await confirm2('Submit your exam? This action cannot be undone.');
+  if(!ok)return;
+  const hash=await SC.hashData(answers);
+  Store.addSubmission(activeExamId,{studentId:CU.id,answers,answerHash:hash,submittedAt:new Date().toISOString()});
+  sessionStorage.removeItem('ans_'+activeExamId);
+  toast('✓ Exam submitted successfully!','success');
+  closeViewer();
+  setTimeout(()=>go('history'),400);
+}
+
+function closeViewer(){
+  $('viewer').classList.remove('open');
+  if(timerIv){clearInterval(timerIv);timerIv=null;}
+  if(autoSaveIv){clearInterval(autoSaveIv);autoSaveIv=null;}
+  activeExamId=null;
+  renderDash();
+}
+
+/* ── HISTORY ── */
+function renderHistory(){
+  const ex=myExams();
+  $('hist-body').innerHTML=ex.length?ex.map(e=>{
+    const sub=Store.getSubmission(e.id,CU.id),p=Store.getExamPhase(e);
+    return`<tr><td>${e.title}</td><td><span class="badge b-pur">${e.subject}</span></td><td class="ts">${fmtD(e.scheduledTime)}</td><td>${fmtDur(e.duration)}</td><td>${sub?'<span class="badge b-grn">✓ Submitted</span>':(p==='ended'?'<span class="badge b-red">✕ Missed</span>':'<span class="badge b-ylw">Pending</span>')}</td><td>${sub?`<span class="mono">${tH(sub.answerHash)}</span>`:'—'}</td></tr>`;
+  }).join(''):`<tr><td colspan="6" style="text-align:center;color:var(--dim);padding:2rem">No exam history yet.</td></tr>`;
+}
+
+/* ── VERIFY ── */
+function buildVSel(){
+  const ex=myExams().filter(e=>e.encryptedPackage);
+  $('v-sel').innerHTML='<option value="">— Choose an encrypted exam —</option>'+ex.map(e=>`<option value="${e.id}">${e.title}</option>`).join('');
+}
+
+async function runVerify(){
+  const id=$('v-sel').value; if(!id){toast('Please select an exam.','error');return;}
+  const exam=Store.getExamById(id);
+  if(!exam.encryptedPackage){toast('No encrypted package found.','error');return;}
+  $('v-res').innerHTML='<div class="alert a-acc">⟳ Decrypting and computing hash...</div>';
+  try{
+    const res=await SC.decryptExamPaper(exam.encryptedPackage);
+    Store.logAudit('INTEGRITY_CHECK',CU.id,'Integrity verified: '+exam.title,{passed:res.integrityValid});
+    $('v-res').innerHTML=`
+      <div class="alert ${res.integrityValid?'a-grn':'a-red'}">${res.integrityValid?'✓ Integrity verified — paper is authentic and untampered.':'✕ INTEGRITY CHECK FAILED — content may have been modified!'}</div>
+      <div class="ts td mb" style="margin-bottom:.4rem">Stored Hash (sealed at encryption)</div>
+      <div class="hashbox">${res.storedHash}</div>
+      <div class="ts td mt" style="margin-top:.75rem;margin-bottom:.4rem">Computed Hash (from decrypted content)</div>
+      <div class="hashbox ${res.integrityValid?'':'fail'}">${res.computedHash}</div>
+      <div class="ts td mt" style="margin-top:.75rem">Match: <strong style="color:${res.integrityValid?'var(--grn)':'var(--red)'}">${res.integrityValid?'YES ✓':'NO ✕'}</strong></div>`;
+  }catch(e){$('v-res').innerHTML=`<div class="alert a-red">✕ Verification error: ${e.message}</div>`;}
+}
+
+async function manualHash(){
+  const content=$('v-manual').value;
+  if(!content){toast('Please enter content to hash.','error');return;}
+  const h=await SC.hashData(content);
+  $('v-man-res').innerHTML=`<div class="ts td mb" style="margin-bottom:.4rem">SHA-256 Hash</div><div class="hashbox">${h}</div>`;
+}
+
+/* ── CONFIRM DIALOG ── */
+function confirm2(msg){
+  return new Promise(res=>{
+    const o=document.createElement('div');o.className='mover show';o.style.zIndex='1001';
+    o.innerHTML=`<div class="modal" style="max-width:360px;text-align:center"><div style="font-size:2rem;margin-bottom:.75rem">⚠️</div><p style="font-size:.95rem;font-weight:600;margin-bottom:1.25rem">${msg}</p><div style="display:flex;gap:.75rem;justify-content:center"><button class="btn btno" id="cn">Cancel</button><button class="btn btnp" id="cy">Confirm &amp; Submit</button></div></div>`;
+    document.body.appendChild(o);
+    o.querySelector('#cn').onclick=()=>{o.remove();res(false);};
+    o.querySelector('#cy').onclick=()=>{o.remove();res(true);};
+  });
+}
+
+go('dash');
+</script>
+</body>
+</html>
